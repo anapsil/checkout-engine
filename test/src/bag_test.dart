@@ -3,13 +3,15 @@ import 'package:test/test.dart';
 
 void main() {
   group('BagItem', () {
-    test('resolves its product from the catalog', () {
-      expect(BagItem('soda').product, catalog['soda']);
+    test('can be const and resolves its product from the catalog', () {
+      const item = BagItem('soda');
+
+      expect(item.product, catalog['soda']);
     });
 
-    test('throws UnknownProductException for an id not in the catalog', () {
+    test('throws UnknownProductException when reading an unknown product', () {
       expect(
-        () => BagItem('pizza'),
+        () => const BagItem('pizza').product,
         throwsA(
           isA<UnknownProductException>()
               .having((error) => error.productId, 'productId', 'pizza'),
@@ -18,20 +20,39 @@ void main() {
     });
   });
 
-  group('BagItem quantity', () {
-    test('rejects zero', () {
-      expect(() => BagItem('soda', quantity: 0), throwsArgumentError);
+  group('Bag quantity', () {
+    test('add rejects zero', () {
+      expect(() => Bag().add('soda', quantity: 0), throwsArgumentError);
     });
 
-    test('rejects negative quantities', () {
-      expect(() => BagItem('burger-small', quantity: -2), throwsArgumentError);
+    test('add rejects negative quantities', () {
+      expect(
+        () => Bag().add('burger-small', quantity: -2),
+        throwsArgumentError,
+      );
     });
 
-    test('rejects a bad quantity through add and keeps the bag intact', () {
+    test('add keeps the bag intact after a bad quantity', () {
       final bag = Bag()..add('soda');
 
       expect(() => bag.add('fries-small', quantity: 0), throwsArgumentError);
       expect(bag.items, hasLength(1));
+    });
+
+    test('the constructor rejects a bad quantity', () {
+      expect(
+        () => Bag([const BagItem('soda', quantity: 0)]),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('Order.fromBag', () {
+    test('rejects items slipped into the list after construction', () {
+      final bag = Bag()..add('soda');
+      bag.items.add(const BagItem('coffee', quantity: -1));
+
+      expect(() => Order.fromBag(bag), throwsArgumentError);
     });
   });
 
@@ -45,7 +66,7 @@ void main() {
 
     test('rejects an unknown product passed to the constructor', () {
       expect(
-        () => Bag([BagItem('soda'), BagItem('pizza')]),
+        () => Bag([const BagItem('soda'), const BagItem('pizza')]),
         throwsA(isA<UnknownProductException>()),
       );
     });

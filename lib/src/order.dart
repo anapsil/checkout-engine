@@ -80,7 +80,10 @@ class Order {
         lineDiscountCents = Map.unmodifiable(lineDiscountCents ?? const {}),
         appliedPromotions = List.unmodifiable(appliedPromotions ?? const []);
 
+  /// Throws like [validateBagItem] when an invalid item was added to
+  /// [Bag.items] directly.
   factory Order.fromBag(Bag bag, {String? couponCode}) {
+    bag.items.forEach(validateBagItem);
     final lines = bag.items
         .map((item) => OrderLine(item.product, quantity: item.quantity))
         .toList();
