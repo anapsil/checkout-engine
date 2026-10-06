@@ -232,6 +232,17 @@ void main() {
       expect(bare.calculate(order({'burger-small': 1})).discountCents, 0);
     });
 
+    test('never tries a coupon that does not apply to the order', () {
+      final unusedCoupon = _CountingCoupon();
+      final countingEngine = CheckoutEngine(
+        promotions: [const SmallBurgerDeal(), unusedCoupon],
+      );
+
+      countingEngine.calculate(order({'burger-small': 1}));
+
+      expect(unusedCoupon.applyCalls, 0);
+    });
+
     test('breaks ties by registry order', () {
       const tiedEngine = CheckoutEngine(
         promotions: [_FixedDeal('first'), _FixedDeal('second')],
@@ -249,4 +260,20 @@ class _FixedDeal extends LineDiscountPromotion {
 
   @override
   Map<String, int> computeLineDiscounts(Order order) => {id: 100};
+}
+
+class _CountingCoupon extends OrderDiscountPromotion {
+  int applyCalls = 0;
+
+  _CountingCoupon()
+      : super(id: 'counting', name: 'Counting', requiresCoupon: true);
+
+  @override
+  int discountCentsFor(Order order) => 0;
+
+  @override
+  Order apply(Order order) {
+    applyCalls++;
+    return super.apply(order);
+  }
 }

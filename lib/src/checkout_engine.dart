@@ -19,12 +19,21 @@ class CheckoutEngine {
   /// automatic deal goes first so coupons see its line discounts. On equal
   /// totals a combination with an automatic deal beats one without, and
   /// otherwise the earliest in [promotions] order wins.
+  ///
+  /// Only coupons eligible on the original ring are tried. That assumes an
+  /// automatic deal never makes an ineligible coupon eligible, which holds
+  /// because deals only add discounts and coupons measure the original
+  /// ring or shrink as discounts grow.
   Order calculate(Order order) {
     final ring = Order(lines: order.lines, couponCode: order.couponCode);
     final automaticDeals = promotions
         .where((promotion) => !promotion.requiresCoupon)
-        .where((deal) => deal.isEligible(ring));
-    final coupons = promotions.where((promotion) => promotion.requiresCoupon);
+        .where((deal) => deal.isEligible(ring))
+        .toList();
+    final coupons = promotions
+        .where((promotion) => promotion.requiresCoupon)
+        .where((coupon) => coupon.isEligible(ring))
+        .toList();
 
     final candidates = [
       for (final deal in [...automaticDeals, null])
