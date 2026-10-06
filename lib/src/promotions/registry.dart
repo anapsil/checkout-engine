@@ -9,7 +9,8 @@ import 'sweettooth_coupon.dart';
 import 'welcome15_coupon.dart';
 
 /// The engine reads this list when calculating an order. On equal totals
-/// the engine keeps the promotion listed first.
+/// it prefers a combination with an automatic deal, then the promotion
+/// listed first.
 final List<Promotion> availablePromotions = [
   const SmallBurgerDeal(),
   const FreeSmallFriesDeal(),
