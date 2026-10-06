@@ -79,6 +79,44 @@ void main() {
     });
   });
 
+  group('CheckoutEngine.calculate from the original ring', () {
+    test('gives the same result when run twice', () {
+      final once = engine.calculate(
+        order({'burger-small': 1, 'soda': 3}, couponCode: 'WELCOME15'),
+      );
+
+      final twice = engine.calculate(once);
+
+      expect(twice.totalCents, once.totalCents);
+      expect(twice.discountCents, once.discountCents);
+      expect(twice.lineDiscountCents, once.lineDiscountCents);
+      expect(twice.appliedPromotions, once.appliedPromotions);
+    });
+
+    test('drops discounts the order arrived with', () {
+      final preDiscounted = order({'burger-large': 1}).copyWith(
+        discountCents: 300,
+        lineDiscountCents: {'burger-large': 300},
+      );
+
+      final result = engine.calculate(preDiscounted);
+
+      expect(result.discountCents, 0);
+      expect(result.lineDiscountCents, isEmpty);
+      expect(result.totalCents, 1199 + 105);
+    });
+
+    test('keeps the lines and the coupon code', () {
+      final original = order({'cookie': 2}, couponCode: 'SWEETTOOTH');
+
+      final result = engine.calculate(original.withDiscount(50));
+
+      expect(result.lines, original.lines);
+      expect(result.couponCode, 'SWEETTOOTH');
+      expect(result.discountCents, 179);
+    });
+  });
+
   group('CheckoutEngine.calculate', () {
     test('matches the Finance reference example of 11.92', () {
       final result = engine.calculate(order({'burger-small': 1, 'soda': 3}));
