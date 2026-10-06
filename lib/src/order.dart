@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'bag.dart';
+import 'money.dart';
 import 'product.dart';
 
 class OrderLine {
@@ -53,13 +56,40 @@ class Order {
   int get subtotalCents =>
       lines.fold(0, (sum, line) => sum + line.lineTotalCents);
 
-  /// The city charges 8.75% sales tax.
+  /// What the customer pays before tax: the subtotal after every discount,
+  /// never below zero.
+  int get discountedSubtotalCents => max(0, subtotalCents - discountCents);
+
+  /// The city charges 8.75% sales tax on what the customer actually pays,
+  /// rounded half-up.
   int get taxCents {
     const taxRateBps = 875;
-    return subtotalCents * taxRateBps ~/ 10000;
+    return percentOfCents(discountedSubtotalCents, taxRateBps);
   }
 
-  int get totalCents => subtotalCents - discountCents + taxCents;
+  int get totalCents => discountedSubtotalCents + taxCents;
+
+  /// Units of [productId] across every line of the order.
+  int quantityOf(String productId) => lines
+      .where((line) => line.product.id == productId)
+      .fold(0, (sum, line) => sum + line.quantity);
+
+  /// Adds [cents] to the order discount and, when [productId] is given,
+  /// to that product's entry in [lineDiscountCents].
+  Order withDiscount(int cents, {String? productId}) {
+    final lineDiscounts = {...lineDiscountCents};
+    if (productId != null) {
+      lineDiscounts.update(
+        productId,
+        (current) => current + cents,
+        ifAbsent: () => cents,
+      );
+    }
+    return copyWith(
+      discountCents: discountCents + cents,
+      lineDiscountCents: lineDiscounts,
+    );
+  }
 
   /// [lineDiscountCents], if given, replaces the whole map.
   Order copyWith({
@@ -76,8 +106,7 @@ class Order {
   }
 
   @override
-  String toString() =>
-      'Order(lines: $lines, coupon: $couponCode, '
+  String toString() => 'Order(lines: $lines, coupon: $couponCode, '
       'subtotal: $subtotalCents, discount: $discountCents, '
       'tax: $taxCents, total: $totalCents)';
 }
