@@ -18,10 +18,14 @@ class BagItem {
   final Product product;
 
   /// Throws [UnknownProductException] when [productId] is not in the
-  /// catalog.
+  /// catalog and [ArgumentError] when [quantity] is below one.
   BagItem(this.productId, {this.quantity = 1})
       : product =
-            catalog[productId] ?? (throw UnknownProductException(productId));
+            catalog[productId] ?? (throw UnknownProductException(productId)) {
+    if (quantity < 1) {
+      throw ArgumentError.value(quantity, 'quantity', 'must be at least 1');
+    }
+  }
 }
 
 class Bag {

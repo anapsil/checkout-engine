@@ -18,6 +18,23 @@ void main() {
     });
   });
 
+  group('BagItem quantity', () {
+    test('rejects zero', () {
+      expect(() => BagItem('soda', quantity: 0), throwsArgumentError);
+    });
+
+    test('rejects negative quantities', () {
+      expect(() => BagItem('burger-small', quantity: -2), throwsArgumentError);
+    });
+
+    test('rejects a bad quantity through add and keeps the bag intact', () {
+      final bag = Bag()..add('soda');
+
+      expect(() => bag.add('fries-small', quantity: 0), throwsArgumentError);
+      expect(bag.items, hasLength(1));
+    });
+  });
+
   group('Bag', () {
     test('add throws for an unknown product and keeps the bag intact', () {
       final bag = Bag()..add('soda');
