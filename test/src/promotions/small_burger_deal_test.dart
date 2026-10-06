@@ -65,4 +65,23 @@ void main() {
       expect(order.lineDiscountCents, isEmpty);
     });
   });
+
+  test('never discounts a small burger already at or below 4.99', () {
+    final order = Order(
+      lines: [
+        OrderLine(
+          const Product(
+            id: 'burger-small',
+            name: 'Classic Burger (Small)',
+            category: 'burgers',
+            priceCents: 450,
+          ),
+          quantity: 1,
+        ),
+      ],
+    );
+
+    expect(deal.isEligible(order), isFalse);
+    expect(deal.apply(order).discountCents, 0);
+  });
 }

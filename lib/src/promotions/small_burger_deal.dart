@@ -16,11 +16,12 @@ class SmallBurgerDeal extends LineDiscountPromotion {
   @override
   Map<String, int> lineDiscountsFor(Order order) {
     final quantity = order.quantityOf(_smallBurgerId);
-    if (quantity == 0) return const {};
+    if (quantity <= 0) return const {};
     final unitPrice = order.lines
         .firstWhere((line) => line.product.id == _smallBurgerId)
         .product
         .priceCents;
+    if (unitPrice <= _dealPriceCents) return const {};
     return {_smallBurgerId: quantity * (unitPrice - _dealPriceCents)};
   }
 }
