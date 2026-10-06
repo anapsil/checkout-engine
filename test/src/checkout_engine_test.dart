@@ -24,6 +24,61 @@ void main() {
     });
   });
 
+  group('CheckoutEngine.calculate applied promotions', () {
+    test('lists only the winning automatic deal and what it saved', () {
+      final result = engine.calculate(order({'burger-small': 1, 'soda': 3}));
+
+      expect(result.appliedPromotions, [
+        const AppliedPromotion(
+          id: 'small-burger-499',
+          name: r'Small Burger for $4.99',
+          discountCents: 200,
+        ),
+      ]);
+    });
+
+    test('lists the deal and then the coupon', () {
+      final result = engine.calculate(
+        order({'burger-small': 1}, couponCode: 'WELCOME15'),
+      );
+
+      expect(
+        result.appliedPromotions.map((applied) => applied.id),
+        ['small-burger-499', 'welcome15'],
+      );
+      expect(result.appliedPromotions.last.discountCents, 105);
+    });
+
+    test('adds up to the order discount', () {
+      final result = engine.calculate(
+        order({'burger-small': 2, 'fries-small': 1}, couponCode: 'FOUR99'),
+      );
+
+      final saved = result.appliedPromotions
+          .fold(0, (sum, applied) => sum + applied.discountCents);
+      expect(saved, result.discountCents);
+    });
+
+    test('keeps the automatic deal over an equally priced coupon', () {
+      final result = engine.calculate(
+        order({'burger-small': 1}, couponCode: 'FOUR99'),
+      );
+
+      expect(
+        result.appliedPromotions.map((applied) => applied.id),
+        ['small-burger-499'],
+      );
+    });
+
+    test('is empty when no promotion applies', () {
+      final result = engine.calculate(
+        order({'salad': 1}, couponCode: 'BOGUS'),
+      );
+
+      expect(result.appliedPromotions, isEmpty);
+    });
+  });
+
   group('CheckoutEngine.calculate', () {
     test('matches the Finance reference example of 11.92', () {
       final result = engine.calculate(order({'burger-small': 1, 'soda': 3}));

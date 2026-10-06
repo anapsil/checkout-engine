@@ -106,4 +106,39 @@ void main() {
       expect(order.lineDiscountCents, isEmpty);
     });
   });
+
+  group('Order.appliedPromotions', () {
+    const smallBurger = AppliedPromotion(
+      id: 'small-burger-499',
+      name: r'Small Burger for $4.99',
+      discountCents: 200,
+    );
+
+    test('is empty by default', () {
+      expect(Order.fromBag(Bag()..add('soda')).appliedPromotions, isEmpty);
+    });
+
+    test('is set through copyWith and kept by withDiscount', () {
+      final order = Order.fromBag(Bag()..add('burger-small'))
+          .copyWith(appliedPromotions: [smallBurger]).withDiscount(50);
+
+      expect(order.appliedPromotions, [smallBurger]);
+    });
+
+    test('cannot be modified from outside', () {
+      final order = Order.fromBag(Bag()..add('burger-small'))
+          .copyWith(appliedPromotions: [smallBurger]);
+
+      expect(() => order.appliedPromotions.clear(), throwsUnsupportedError);
+    });
+  });
+
+  group('AppliedPromotion', () {
+    test('compares by value', () {
+      expect(
+        const AppliedPromotion(id: 'a', name: 'A', discountCents: 1),
+        const AppliedPromotion(id: 'a', name: 'A', discountCents: 1),
+      );
+    });
+  });
 }

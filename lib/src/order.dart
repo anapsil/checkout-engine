@@ -16,6 +16,32 @@ class OrderLine {
   String toString() => '${quantity}x ${product.name}';
 }
 
+/// A promotion that made it onto the order, with how much it took off.
+class AppliedPromotion {
+  final String id;
+  final String name;
+  final int discountCents;
+
+  const AppliedPromotion({
+    required this.id,
+    required this.name,
+    required this.discountCents,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      other is AppliedPromotion &&
+      other.id == id &&
+      other.name == name &&
+      other.discountCents == discountCents;
+
+  @override
+  int get hashCode => Object.hash(id, name, discountCents);
+
+  @override
+  String toString() => '$name (-$discountCents)';
+}
+
 /// All money values are integer cents (699 means $6.99).
 ///
 /// The totals getters below are the single source of truth for money
@@ -38,13 +64,19 @@ class Order {
   /// so other line-aware deals can account for what is already off.
   final Map<String, int> lineDiscountCents;
 
+  /// Promotions applied to this order, in the order they were applied.
+  /// Their discounts add up to [discountCents].
+  final List<AppliedPromotion> appliedPromotions;
+
   Order({
     required List<OrderLine> lines,
     this.couponCode,
     this.discountCents = 0,
     Map<String, int>? lineDiscountCents,
+    List<AppliedPromotion>? appliedPromotions,
   })  : lines = List.unmodifiable(lines),
-        lineDiscountCents = Map.unmodifiable(lineDiscountCents ?? const {});
+        lineDiscountCents = Map.unmodifiable(lineDiscountCents ?? const {}),
+        appliedPromotions = List.unmodifiable(appliedPromotions ?? const []);
 
   factory Order.fromBag(Bag bag, {String? couponCode}) {
     final lines = bag.items
@@ -91,22 +123,26 @@ class Order {
     );
   }
 
-  /// [lineDiscountCents], if given, replaces the whole map.
+  /// [lineDiscountCents] and [appliedPromotions], if given, replace the
+  /// whole collection.
   Order copyWith({
     String? couponCode,
     int? discountCents,
     Map<String, int>? lineDiscountCents,
+    List<AppliedPromotion>? appliedPromotions,
   }) {
     return Order(
       lines: lines,
       couponCode: couponCode ?? this.couponCode,
       discountCents: discountCents ?? this.discountCents,
       lineDiscountCents: lineDiscountCents ?? this.lineDiscountCents,
+      appliedPromotions: appliedPromotions ?? this.appliedPromotions,
     );
   }
 
   @override
   String toString() => 'Order(lines: $lines, coupon: $couponCode, '
       'subtotal: $subtotalCents, discount: $discountCents, '
+      'promotions: $appliedPromotions, '
       'tax: $taxCents, total: $totalCents)';
 }
