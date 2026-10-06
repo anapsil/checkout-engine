@@ -13,7 +13,8 @@ class Welcome15Coupon extends Promotion {
       : super(id: 'welcome15', name: '15% off', requiresCoupon: true);
 
   @override
-  bool isEligible(Order order) => hasCouponCode(order, _code);
+  bool isEligible(Order order) =>
+      hasCouponCode(order, _code) && order.subtotalCents > 0;
 
   @override
   Order apply(Order order) => isEligible(order)

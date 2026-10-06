@@ -60,4 +60,10 @@ void main() {
       expect(coupon.apply(order).discountCents, 0);
     });
   });
+
+  test('is not eligible on an empty order', () {
+    final order = Order.fromBag(Bag(), couponCode: 'WELCOME15');
+
+    expect(coupon.isEligible(order), isFalse);
+  });
 }
