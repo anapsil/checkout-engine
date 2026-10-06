@@ -1,13 +1,27 @@
 import 'catalog.dart';
 import 'product.dart';
 
+/// Thrown when a bag receives a product id that is not on the menu.
+class UnknownProductException implements Exception {
+  final String productId;
+
+  const UnknownProductException(this.productId);
+
+  @override
+  String toString() =>
+      'UnknownProductException: "$productId" is not in the catalog';
+}
+
 class BagItem {
   final String productId;
   final int quantity;
+  final Product product;
 
-  const BagItem(this.productId, {this.quantity = 1});
-
-  Product get product => catalog[productId]!;
+  /// Throws [UnknownProductException] when [productId] is not in the
+  /// catalog.
+  BagItem(this.productId, {this.quantity = 1})
+      : product =
+            catalog[productId] ?? (throw UnknownProductException(productId));
 }
 
 class Bag {
