@@ -248,5 +248,5 @@ class _FixedDeal extends LineDiscountPromotion {
   const _FixedDeal(String id) : super(id: id, name: id, requiresCoupon: false);
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) => {id: 100};
+  Map<String, int> computeLineDiscounts(Order order) => {id: 100};
 }

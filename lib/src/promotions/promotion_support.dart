@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../order.dart';
 import '../product.dart';
 
@@ -17,6 +19,15 @@ List<Product> productsInCategory(Order order, String category) =>
     distinctProducts(order)
         .where((product) => product.category == category)
         .toList();
+
+/// What it takes to bring [quantity] units priced at [unitPriceCents] down
+/// to [floorCents] each; zero when the price is already at or below it.
+int priceFloorDiscount(
+  int unitPriceCents, {
+  required int quantity,
+  required int floorCents,
+}) =>
+    quantity * max(0, unitPriceCents - floorCents);
 
 /// Whether [order] carries the coupon [code], ignoring case and
 /// surrounding whitespace.

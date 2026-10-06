@@ -17,12 +17,13 @@ class DrinksBulkDeal extends LineDiscountPromotion {
         );
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) => {
+  Map<String, int> computeLineDiscounts(Order order) => {
         for (final drink in productsInCategory(order, drinksCategory))
-          if (order.quantityOf(drink.id) >= _minimumQuantity)
-            drink.id: percentOfCents(
-              order.quantityOf(drink.id) * drink.priceCents,
-              _discountBps,
-            ),
+          drink.id: _bulkDiscount(order.quantityOf(drink.id), drink.priceCents),
       };
+
+  int _bulkDiscount(int quantity, int unitPriceCents) =>
+      quantity >= _minimumQuantity
+          ? percentOfCents(quantity * unitPriceCents, _discountBps)
+          : 0;
 }

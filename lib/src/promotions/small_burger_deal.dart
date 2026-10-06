@@ -1,5 +1,6 @@
 import '../order.dart';
 import 'line_discount_promotion.dart';
+import 'promotion_support.dart';
 
 const _smallBurgerId = 'burger-small';
 const _dealPriceCents = 499;
@@ -14,14 +15,13 @@ class SmallBurgerDeal extends LineDiscountPromotion {
         );
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) {
-    final quantity = order.quantityOf(_smallBurgerId);
-    if (quantity <= 0) return const {};
-    final unitPrice = order.lines
-        .firstWhere((line) => line.product.id == _smallBurgerId)
-        .product
-        .priceCents;
-    if (unitPrice <= _dealPriceCents) return const {};
-    return {_smallBurgerId: quantity * (unitPrice - _dealPriceCents)};
-  }
+  Map<String, int> computeLineDiscounts(Order order) => {
+        for (final burger in distinctProducts(order))
+          if (burger.id == _smallBurgerId)
+            burger.id: priceFloorDiscount(
+              burger.priceCents,
+              quantity: order.quantityOf(burger.id),
+              floorCents: _dealPriceCents,
+            ),
+      };
 }

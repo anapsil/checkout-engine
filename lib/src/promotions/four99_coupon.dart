@@ -16,18 +16,16 @@ class Four99Coupon extends LineDiscountPromotion {
         );
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) {
+  Map<String, int> computeLineDiscounts(Order order) {
     if (!hasCouponCode(order, _code)) return const {};
-    final topUps = {
+    return {
       for (final burger in productsInCategory(order, burgersCategory))
-        burger.id: _topUpToFloor(order, burger.id, burger.priceCents),
+        burger.id: priceFloorDiscount(
+              burger.priceCents,
+              quantity: order.quantityOf(burger.id),
+              floorCents: _priceFloorCents,
+            ) -
+            (order.lineDiscountCents[burger.id] ?? 0),
     };
-    return Map.fromEntries(topUps.entries.where((topUp) => topUp.value > 0));
-  }
-
-  int _topUpToFloor(Order order, String burgerId, int unitPriceCents) {
-    final maximumOff =
-        order.quantityOf(burgerId) * (unitPriceCents - _priceFloorCents);
-    return maximumOff - (order.lineDiscountCents[burgerId] ?? 0);
   }
 }

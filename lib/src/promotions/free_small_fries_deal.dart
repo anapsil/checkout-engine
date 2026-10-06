@@ -14,7 +14,7 @@ class FreeSmallFriesDeal extends LineDiscountPromotion {
         );
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) {
+  Map<String, int> computeLineDiscounts(Order order) {
     final hasBurger = productsInCategory(order, burgersCategory).isNotEmpty;
     final smallFries =
         distinctProducts(order).where((product) => product.id == _smallFriesId);

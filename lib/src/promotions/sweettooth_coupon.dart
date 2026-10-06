@@ -11,7 +11,7 @@ class SweetToothCoupon extends LineDiscountPromotion {
       : super(id: 'sweettooth', name: 'Free Dessert', requiresCoupon: true);
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) {
+  Map<String, int> computeLineDiscounts(Order order) {
     final desserts = productsInCategory(order, dessertsCategory);
     if (!hasCouponCode(order, _code) || desserts.isEmpty) return const {};
     final cheapest = desserts.reduce(

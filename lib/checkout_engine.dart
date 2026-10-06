@@ -8,6 +8,7 @@ export 'src/promotions/drinks_bulk_deal.dart';
 export 'src/promotions/four99_coupon.dart';
 export 'src/promotions/free_small_fries_deal.dart';
 export 'src/promotions/line_discount_promotion.dart';
+export 'src/promotions/order_discount_promotion.dart';
 export 'src/promotions/promotion.dart';
 export 'src/promotions/registry.dart';
 export 'src/promotions/save5_coupon.dart';

@@ -16,10 +16,9 @@ class DrinkTrioDeal extends LineDiscountPromotion {
         );
 
   @override
-  Map<String, int> lineDiscountsFor(Order order) => {
+  Map<String, int> computeLineDiscounts(Order order) => {
         for (final drink in productsInCategory(order, drinksCategory))
-          if (drink.id != _excludedDrinkId &&
-              order.quantityOf(drink.id) >= _setSize)
+          if (drink.id != _excludedDrinkId)
             drink.id: order.quantityOf(drink.id) ~/ _setSize * drink.priceCents,
       };
 }

@@ -25,6 +25,17 @@ void main() {
     });
   });
 
+  group('priceFloorDiscount', () {
+    test('takes every unit down to the floor', () {
+      expect(priceFloorDiscount(699, quantity: 2, floorCents: 499), 400);
+    });
+
+    test('is zero when the price is already at or below the floor', () {
+      expect(priceFloorDiscount(499, quantity: 1, floorCents: 499), 0);
+      expect(priceFloorDiscount(450, quantity: 3, floorCents: 499), 0);
+    });
+  });
+
   group('promotions on lines without units', () {
     test('free fries ignores an empty small fries line', () {
       final order = Order(
