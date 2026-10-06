@@ -24,9 +24,14 @@ abstract class LineDiscountPromotion extends Promotion {
   bool isEligible(Order order) => lineDiscountsFor(order).isNotEmpty;
 
   @override
-  Order apply(Order order) => lineDiscountsFor(order).entries.fold(
-        order,
-        (discounted, entry) =>
-            discounted.withDiscount(entry.value, productId: entry.key),
-      );
+  Order apply(Order order) {
+    final discounts = lineDiscountsFor(order);
+    return discounts.isEmpty
+        ? order
+        : order.withPromotion(
+            id: id,
+            name: name,
+            lineDiscountCents: discounts,
+          );
+  }
 }

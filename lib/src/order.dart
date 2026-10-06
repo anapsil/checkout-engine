@@ -65,7 +65,9 @@ class Order {
   final Map<String, int> lineDiscountCents;
 
   /// Promotions applied to this order, in the order they were applied.
-  /// Their discounts add up to [discountCents].
+  /// Their discounts add up to [discountCents] as long as every discount
+  /// came in through [withPromotion]; [withDiscount] and [copyWith] do not
+  /// record anything.
   final List<AppliedPromotion> appliedPromotions;
 
   Order({
@@ -106,8 +108,35 @@ class Order {
       .where((line) => line.product.id == productId)
       .fold(0, (sum, line) => sum + line.quantity);
 
+  /// Records a promotion and adds its discount in one step:
+  /// [orderDiscountCents] off the order as a whole plus every entry of
+  /// [lineDiscountCents] off that product's line. The recorded amount is
+  /// their sum.
+  Order withPromotion({
+    required String id,
+    required String name,
+    int orderDiscountCents = 0,
+    Map<String, int> lineDiscountCents = const {},
+  }) {
+    final discounted = lineDiscountCents.entries.fold(
+      withDiscount(orderDiscountCents),
+      (order, entry) => order.withDiscount(entry.value, productId: entry.key),
+    );
+    return discounted.copyWith(
+      appliedPromotions: [
+        ...appliedPromotions,
+        AppliedPromotion(
+          id: id,
+          name: name,
+          discountCents: discounted.discountCents - discountCents,
+        ),
+      ],
+    );
+  }
+
   /// Adds [cents] to the order discount and, when [productId] is given,
-  /// to that product's entry in [lineDiscountCents].
+  /// to that product's entry in [lineDiscountCents]. Low-level: prefer
+  /// [withPromotion], which also records the promotion.
   Order withDiscount(int cents, {String? productId}) {
     final lineDiscounts = {...lineDiscountCents};
     if (productId != null) {

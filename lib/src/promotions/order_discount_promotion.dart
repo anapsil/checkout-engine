@@ -20,6 +20,8 @@ abstract class OrderDiscountPromotion extends Promotion {
   @override
   Order apply(Order order) {
     final cents = discountCentsFor(order);
-    return cents > 0 ? order.withDiscount(cents) : order;
+    return cents > 0
+        ? order.withPromotion(id: id, name: name, orderDiscountCents: cents)
+        : order;
   }
 }

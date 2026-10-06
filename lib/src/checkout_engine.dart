@@ -29,28 +29,15 @@ class CheckoutEngine {
     final candidates = [
       for (final deal in [...automaticDeals, null])
         for (final coupon in [null, ...coupons])
-          [deal, coupon].nonNulls.fold(ring, _applyAndRecord),
+          [deal, coupon].nonNulls.fold(
+                ring,
+                (priced, promotion) => promotion.apply(priced),
+              ),
     ];
 
     return candidates.reduce(
       (best, candidate) =>
           candidate.totalCents < best.totalCents ? candidate : best,
-    );
-  }
-
-  Order _applyAndRecord(Order order, Promotion promotion) {
-    final discounted = promotion.apply(order);
-    final savedCents = discounted.discountCents - order.discountCents;
-    if (savedCents <= 0) return order;
-    return discounted.copyWith(
-      appliedPromotions: [
-        ...discounted.appliedPromotions,
-        AppliedPromotion(
-          id: promotion.id,
-          name: promotion.name,
-          discountCents: savedCents,
-        ),
-      ],
     );
   }
 }

@@ -133,6 +133,84 @@ void main() {
     });
   });
 
+  group('Order.withPromotion', () {
+    test('adds an order-wide discount and records the promotion', () {
+      final order = Order.fromBag(Bag()..add('salad'))
+          .withPromotion(id: 'p', name: 'P', orderDiscountCents: 80);
+
+      expect(order.discountCents, 80);
+      expect(order.lineDiscountCents, isEmpty);
+      expect(order.appliedPromotions, [
+        const AppliedPromotion(id: 'p', name: 'P', discountCents: 80),
+      ]);
+    });
+
+    test('adds line discounts and records their sum', () {
+      final order = Order.fromBag(
+        Bag()
+          ..add('burger-small')
+          ..add('fries-small'),
+      ).withDiscount(100, productId: 'burger-small').withPromotion(
+        id: 'p',
+        name: 'P',
+        lineDiscountCents: {'burger-small': 100, 'fries-small': 249},
+      );
+
+      expect(order.discountCents, 449);
+      expect(order.lineDiscountCents, {
+        'burger-small': 200,
+        'fries-small': 249,
+      });
+      expect(order.appliedPromotions.single.discountCents, 349);
+    });
+
+    test('appends after promotions already recorded', () {
+      final order = Order.fromBag(Bag()..add('salad'))
+          .withPromotion(id: 'a', name: 'A', orderDiscountCents: 10)
+          .withPromotion(id: 'b', name: 'B', orderDiscountCents: 20);
+
+      expect(order.appliedPromotions.map((applied) => applied.id), [
+        'a',
+        'b',
+      ]);
+    });
+  });
+
+  group('promotions applied outside the engine', () {
+    test('a coupon records itself', () {
+      final order = Order.fromBag(
+        Bag()..add('burger-small'),
+        couponCode: 'WELCOME15',
+      );
+
+      final applied = const Welcome15Coupon().apply(order);
+
+      expect(applied.appliedPromotions, [
+        const AppliedPromotion(
+          id: 'welcome15',
+          name: '15% off',
+          discountCents: 105,
+        ),
+      ]);
+    });
+
+    test('a line deal records itself', () {
+      final applied = const SmallBurgerDeal().apply(
+        Order.fromBag(Bag()..add('burger-small', quantity: 2)),
+      );
+
+      expect(applied.appliedPromotions.single.discountCents, 400);
+    });
+
+    test('nothing is recorded when the promotion does not apply', () {
+      final applied = const Save5Coupon().apply(
+        Order.fromBag(Bag()..add('coffee'), couponCode: 'SAVE5'),
+      );
+
+      expect(applied.appliedPromotions, isEmpty);
+    });
+  });
+
   group('AppliedPromotion', () {
     test('compares by value', () {
       expect(
